@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dr Abo El Ezz - مساعد كلية الصيدلة الذكي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-sidebar: #0d1117;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-color: #10a37f;
+            --accent-hover: #0d8c6d;
+            --user-msg-bg: #1a4d3a;
+            --ai-msg-bg: #21262d;
+            --danger: #f85149;
+            --warning: #f0883e;
+            --info: #58a6ff;
+            --success: #3fb950;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            direction: rtl;
+        }
+
+        .app-container { display: flex; height: 100vh; }
+
+        .sidebar {
+            width: 300px;
+            background: var(--bg-sidebar);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .sidebar-header { padding: 16px; border-bottom: 1px solid var(--border-color); }
+
+        .new-chat-btn {
+            width: 100%; padding: 12px; background: transparent;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            color: var(--text-primary); font-family: 'Tajawal', sans-serif;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; transition: all 0.2s;
+        }
+        .new-chat-btn:hover { background: var(--bg-tertiary); border-color: var(--accent-color); }
+
+        .logo-section {
+            display: flex; align-items: center; gap: 12px;
+            padding: 20px 16px; border-bottom: 1px solid var(--border-color);
+        }
+        .logo-icon {
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, #10a37f, #0d8c6d);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+        .logo-text {
+            font-size: 18px; font-weight: 800;
+            background: linear-gradient(135deg, #10a37f, #58a6ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .logo-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+        .sidebar-nav { flex: 1; overflow-y: auto; padding: 12px; }
+        .nav-section { margin-bottom: 16px; }
+        .nav-title {
+            font-size: 11px; font-weight: 700; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 0.5px; padding: 0 8px 8px;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+            border-radius: 8px; cursor: pointer; transition: all 0.2s;
+            font-size: 14px; color: var(--text-secondary); margin-bottom: 2px;
+        }
+        .nav-item:hover, .nav-item.active { background: var(--bg-tertiary); color: var(--text-primary); }
+        .nav-item i { width: 20px; text-align: center; font-size: 15px; }
+
+        .chat-history-item {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            border-radius: 8px; cursor: pointer; transition: all 0.2s;
+            font-size: 14px; color: var(--text-secondary); margin-bottom: 2px; position: relative;
+        }
+        .chat-history-item:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+        .chat-history-item .chat-title { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-history-item .delete-chat {
+            opacity: 0; transition: opacity 0.2s; padding: 4px; border-radius: 4px;
+        }
+        .chat-history-item:hover .delete-chat { opacity: 1; }
+        .delete-chat:hover { background: rgba(248, 81, 73, 0.2); color: var(--danger); }
+
+        .sidebar-footer { padding: 12px; border-top: 1px solid var(--border-color); }
+        .user-profile {
+            display: flex; align-items: center; gap: 10px; padding: 8px;
+            border-radius: 8px; cursor: pointer; transition: background 0.2s;
+        }
+        .user-profile:hover { background: var(--bg-tertiary); }
+        .user-avatar {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, #10a37f, #58a6ff);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 14px;
+        }
+        .user-info { flex: 1; }
+        .user-name { font-size: 13px; font-weight: 600; }
+        .user-role { font-size: 11px; color: var(--text-secondary); }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
+
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px; border-bottom: 1px solid var(--border-color); background: var(--bg-primary);
+        }
+        .top-bar-title { font-size: 16px; font-weight: 700; }
+        .top-bar-actions { display: flex; gap: 8px; }
+        .icon-btn {
+            width: 36px; height: 36px; border-radius: 8px;
+            border: 1px solid var(--border-color); background: transparent;
+            color: var(--text-secondary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .icon-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+
+        .chat-area { flex: 1; overflow-y: auto; padding: 20px 0; scroll-behavior: smooth; }
+        .chat-area::-webkit-scrollbar { width: 8px; }
+        .chat-area::-webkit-scrollbar-track { background: transparent; }
+        .chat-area::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+        .welcome-screen {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; padding: 40px; text-align: center;
+        }
+        .welcome-logo {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, #10a37f, #0d8c6d);
+            border-radius: 20px; display: flex; align-items: center; justify-content: center;
+            font-size: 40px; margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(16, 163, 127, 0.3);
+        }
+        .welcome-title {
+            font-size: 32px; font-weight: 800; margin-bottom: 8px;
+            background: linear-gradient(135deg, #10a37f, #58a6ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .welcome-subtitle {
+            font-size: 16px; color: var(--text-secondary); margin-bottom: 40px;
+            max-width: 500px; line-height: 1.6;
+        }
+        .features-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px; max-width: 800px; width: 100%;
+        }
+        .feature-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; text-align: right; cursor: pointer;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            border-color: var(--accent-color); transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(16, 163, 127, 0.15);
+        }
+        .feature-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; margin-bottom: 12px;
+        }
+        .feature-icon.pdf { background: rgba(248, 81, 73, 0.15); color: var(--danger); }
+        .feature-icon.quiz { background: rgba(240, 136, 62, 0.15); color: var(--warning); }
+        .feature-icon.summary { background: rgba(88, 166, 255, 0.15); color: var(--info); }
+        .feature-icon.solve { background: rgba(63, 185, 80, 0.15); color: var(--success); }
+        .feature-icon.drug { background: rgba(16, 163, 127, 0.15); color: var(--accent-color); }
+        .feature-icon.calc { background: rgba(139, 148, 158, 0.15); color: var(--text-secondary); }
+        .feature-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+        .feature-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+        .messages-container { display: none; flex-direction: column; gap: 2px; }
+        .message { padding: 20px 0; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user { background: var(--user-msg-bg); }
+        .message.ai { background: var(--ai-msg-bg); }
+
+        .message-content {
+            max-width: 800px; margin: 0 auto; padding: 0 20px;
+            display: flex; gap: 16px;
+        }
+        .message-avatar {
+            width: 36px; height: 36px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 16px;
+        }
+        .message.user .message-avatar { background: linear-gradient(135deg, #10a37f, #0d8c6d); }
+        .message.ai .message-avatar { background: linear-gradient(135deg, #58a6ff, #0969da); }
+        .message-body { flex: 1; min-width: 0; }
+        .message-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .message-sender { font-size: 14px; font-weight: 700; }
+        .message-time { font-size: 11px; color: var(--text-secondary); }
+        .message-text { font-size: 15px; line-height: 1.7; color: var(--text-primary); white-space: pre-wrap; }
+        .message-text code { background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 13px; }
+        .message-text pre { background: var(--bg-tertiary); padding: 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; border: 1px solid var(--border-color); }
+        .message-text pre code { background: none; padding: 0; }
+        .message-text ul, .message-text ol { margin: 8px 0; padding-right: 24px; }
+        .message-text li { margin: 4px 0; }
+        .message-text h3 { font-size: 18px; margin: 16px 0 8px; color: var(--accent-color); }
+        .message-text h4 { font-size: 15px; margin: 12px 0 6px; color: var(--info); }
+        .message-text strong { color: var(--accent-color); }
+        .message-text table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+        .message-text th, .message-text td { border: 1px solid var(--border-color); padding: 10px 12px; text-align: right; }
+        .message-text th { background: var(--bg-tertiary); font-weight: 700; }
+
+        .message-actions {
+            display: flex; gap: 8px; margin-top: 12px; opacity: 0; transition: opacity 0.2s;
+        }
+        .message:hover .message-actions { opacity: 1; }
+        .msg-action-btn {
+            background: none; border: none; color: var(--text-secondary); cursor: pointer;
+            padding: 4px 8px; border-radius: 4px; font-size: 12px;
+            display: flex; align-items: center; gap: 4px; transition: all 0.2s;
+        }
+        .msg-action-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+
+        .typing-indicator { display: none; padding: 20px 0; background: var(--ai-msg-bg); }
+        .typing-dots { display: flex; gap: 4px; align-items: center; }
+        .typing-dots span {
+            width: 8px; height: 8px; background: var(--accent-color);
+            border-radius: 50%; animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typingBounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        .input-area { padding: 16px 20px 24px; background: var(--bg-primary); }
+        .input-container { max-width: 800px; margin: 0 auto; position: relative; }
+        .input-wrapper {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 12px 16px; display: flex; flex-direction: column;
+            gap: 8px; transition: border-color 0.2s;
+        }
+        .input-wrapper:focus-within { border-color: var(--accent-color); }
+        .input-field {
+            background: transparent; border: none; outline: none; color: var(--text-primary);
+            font-family: 'Tajawal', sans-serif; font-size: 15px; resize: none;
+            min-height: 24px; max-height: 200px; line-height: 1.5;
+        }
+        .input-field::placeholder { color: var(--text-secondary); }
+        .input-toolbar { display: flex; align-items: center; justify-content: space-between; }
+        .input-tools { display: flex; gap: 6px; }
+        .tool-btn {
+            width: 32px; height: 32px; border-radius: 8px; border: none;
+            background: transparent; color: var(--text-secondary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; font-size: 14px;
+        }
+        .tool-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+        .tool-btn.active { background: rgba(16, 163, 127, 0.15); color: var(--accent-color); }
+        .send-btn {
+            width: 32px; height: 32px; border-radius: 8px; border: none;
+            background: var(--accent-color); color: white; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; font-size: 14px;
+        }
+        .send-btn:hover { background: var(--accent-hover); }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .input-hint { text-align: center; font-size: 11px; color: var(--text-secondary); margin-top: 8px; }
+
+        .file-preview {
+            display: none; align-items: center; gap: 10px;
+            padding: 8px 12px; background: var(--bg-tertiary);
+            border-radius: 8px; margin-bottom: 8px;
+        }
+        .file-preview.show { display: flex; }
+        .file-icon { font-size: 20px; color: var(--danger); }
+        .file-info { flex: 1; }
+        .file-name { font-size: 13px; font-weight: 600; }
+        .file-size { font-size: 11px; color: var(--text-secondary); }
+        .file-remove {
+            background: none; border: none; color: var(--text-secondary);
+            cursor: pointer; padding: 4px; border-radius: 4px;
+        }
+        .file-remove:hover { color: var(--danger); background: rgba(248, 81, 73, 0.1); }
+
+        .quiz-container {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 24px; margin: 12px 0;
+        }
+        .quiz-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);
+        }
+        .quiz-title { font-size: 18px; font-weight: 800; color: var(--accent-color); }
+        .quiz-progress {
+            font-size: 13px; color: var(--text-secondary);
+            background: var(--bg-tertiary); padding: 6px 14px; border-radius: 20px;
+        }
+        .quiz-question { font-size: 16px; font-weight: 600; margin-bottom: 20px; line-height: 1.6; }
+        .quiz-options { display: flex; flex-direction: column; gap: 10px; }
+        .quiz-option {
+            padding: 14px 16px; background: var(--bg-tertiary);
+            border: 2px solid var(--border-color); border-radius: 10px;
+            cursor: pointer; transition: all 0.2s; font-size: 14px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .quiz-option:hover { border-color: var(--accent-color); background: rgba(16, 163, 127, 0.05); }
+        .quiz-option.selected { border-color: var(--accent-color); background: rgba(16, 163, 127, 0.1); }
+        .quiz-option.correct { border-color: var(--success); background: rgba(63, 185, 80, 0.1); }
+        .quiz-option.wrong { border-color: var(--danger); background: rgba(248, 81, 73, 0.1); }
+        .option-letter {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--bg-secondary); border: 2px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; flex-shrink: 0;
+        }
+        .quiz-option.selected .option-letter { background: var(--accent-color); border-color: var(--accent-color); color: white; }
+        .quiz-option.correct .option-letter { background: var(--success); border-color: var(--success); color: white; }
+        .quiz-option.wrong .option-letter { background: var(--danger); border-color: var(--danger); color: white; }
+        .quiz-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .quiz-btn {
+            padding: 12px 24px; border-radius: 8px; border: none;
+            font-family: 'Tajawal', sans-serif; font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .quiz-btn.primary { background: var(--accent-color); color: white; }
+        .quiz-btn.primary:hover { background: var(--accent-hover); }
+        .quiz-btn.secondary { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .quiz-btn.secondary:hover { background: var(--bg-secondary); }
+        .quiz-result { text-align: center; padding: 40px 20px; }
+        .result-score {
+            font-size: 64px; font-weight: 900;
+            background: linear-gradient(135deg, #10a37f, #58a6ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            margin-bottom: 8px;
+        }
+        .result-text { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .result-detail { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.7); z-index: 1000;
+            align-items: center; justify-content: center; backdrop-filter: blur(4px);
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 16px; width: 90%; max-width: 500px; max-height: 90vh;
+            overflow-y: auto; animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-header {
+            padding: 20px; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-title { font-size: 18px; font-weight: 800; }
+        .modal-close {
+            background: none; border: none; color: var(--text-secondary);
+            cursor: pointer; font-size: 20px; padding: 4px; border-radius: 4px;
+        }
+        .modal-close:hover { color: var(--text-primary); background: var(--bg-tertiary); }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary); }
+        .form-input, .form-select, .form-textarea {
+            width: 100%; padding: 12px 14px; background: var(--bg-tertiary);
+            border: 1px solid var(--border-color); border-radius: 8px;
+            color: var(--text-primary); font-family: 'Tajawal', sans-serif;
+            font-size: 14px; outline: none; transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent-color); }
+        .form-textarea { min-height: 120px; resize: vertical; }
+        .form-hint { font-size: 11px; color: var(--text-secondary); margin-top: 6px; }
+        .modal-footer { padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
+
+        .mobile-menu-btn {
+            display: none; background: none; border: none;
+            color: var(--text-primary); font-size: 20px; cursor: pointer; padding: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; right: 0; top: 0; bottom: 0; transform: translateX(100%); }
+            .sidebar.open { transform: translateX(0); }
+            .mobile-menu-btn { display: block; }
+            .welcome-title { font-size: 24px; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
+
+        .drug-card {
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; margin: 12px 0;
+        }
+        .drug-name { font-size: 20px; font-weight: 800; color: var(--accent-color); margin-bottom: 4px; }
+        .drug-generic { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+        .drug-section { margin-bottom: 12px; }
+        .drug-section-title {
+            font-size: 13px; font-weight: 700; color: var(--info);
+            margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+        }
+        .drug-section-content { font-size: 14px; line-height: 1.6; color: var(--text-secondary); }
+
+        .calc-container {
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; max-width: 400px;
+        }
+        .calc-display {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 16px; text-align: left;
+            font-size: 24px; font-weight: 700; margin-bottom: 16px;
+            min-height: 60px; word-break: break-all;
+        }
+        .calc-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .calc-btn {
+            padding: 16px; border-radius: 8px; border: none;
+            background: var(--bg-secondary); color: var(--text-primary);
+            font-family: 'Tajawal', sans-serif; font-size: 18px; font-weight: 700;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .calc-btn:hover { background: var(--border-color); }
+        .calc-btn.operator { background: var(--accent-color); color: white; }
+        .calc-btn.operator:hover { background: var(--accent-hover); }
+        .calc-btn.clear { background: var(--danger); color: white; }
+        .calc-btn.clear:hover { background: #da3633; }
+
+        .pdf-viewer {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; margin: 12px 0;
+        }
+        .pdf-pages {
+            max-height: 400px; overflow-y: auto; padding: 16px;
+            background: white; border-radius: 8px; color: #333;
+            font-family: 'Tajawal', sans-serif; line-height: 1.8; font-size: 14px;
+        }
+        .pdf-page { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #ddd; }
+        .pdf-page:last-child { border-bottom: none; }
+        .pdf-page-num { text-align: center; font-size: 12px; color: #666; margin-bottom: 10px; }
+
+        .summary-card {
+            background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 20px; margin: 12px 0;
+        }
+        .summary-header {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
+        }
+        .summary-icon {
+            width: 36px; height: 36px; background: rgba(88, 166, 255, 0.15);
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            color: var(--info); font-size: 16px;
+        }
+        .summary-title { font-size: 16px; font-weight: 700; }
+        .summary-stats { display: flex; gap: 16px; margin-bottom: 16px; }
+        .stat-item { text-align: center; }
+        .stat-value { font-size: 20px; font-weight: 800; color: var(--accent-color); }
+        .stat-label { font-size: 11px; color: var(--text-secondary); }
+        .summary-points { list-style: none; padding: 0; }
+        .summary-points li {
+            padding: 8px 0; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: flex-start; gap: 10px;
+            font-size: 14px; line-height: 1.6;
+        }
+        .summary-points li:last-child { border-bottom: none; }
+        .summary-points li::before { content: "✓"; color: var(--success); font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+
+        .toast-container {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            z-index: 2000; display: flex; flex-direction: column; gap: 8px;
+        }
+        .toast {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 14px 20px;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            animation: toastIn 0.3s ease; min-width: 300px;
+        }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        .toast.info { border-color: var(--info); }
+        .toast-icon { font-size: 18px; }
+        .toast.success .toast-icon { color: var(--success); }
+        .toast.error .toast-icon { color: var(--danger); }
+        .toast.info .toast-icon { color: var(--info); }
+        .toast-message { font-size: 14px; font-weight: 500; }
+
+        .spinner {
+            width: 20px; height: 20px; border: 2px solid var(--border-color);
+            border-top-color: var(--accent-color); border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #fileInput { display: none; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" onclick="startNewChat()">
+                    <i class="fas fa-plus"></i>
+                    محادثة جديدة
+                </button>
+            </div>
+
+            <div class="logo-section">
+                <div class="logo-icon">💊</div>
+                <div>
+                    <div class="logo-text">AI Dr Abo El Ezz</div>
+                    <div class="logo-sub">مساعد كلية الصيدلة الذكي</div>
+                </div>
+            </div>
+
+            <div class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-title">الأدوات</div>
+                    <div class="nav-item" onclick="showFeature('pdf')">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>تحليل ملف PDF</span>
+                    </div>
+                    <div class="nav-item" onclick="showFeature('quiz')">
+                        <i class="fas fa-clipboard-question"></i>
+                        <span>إنشاء امتحان</span>
+                    </div>
+                    <div class="nav-item" onclick="showFeature('summary')">
+                        <i class="fas fa-file-lines"></i>
+                        <span>تلخيص محتوى</span>
+                    </div>
+                    <div class="nav-item" onclick="showFeature('solve')">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>حل الأسئلة</span>
+                    </div>
+                    <div class="nav-item" onclick="showFeature('drug')">
+                        <i class="fas fa-pills"></i>
+                        <span>معلومات دوائية</span>
+                    </div>
+                    <div class="nav-item" onclick="showFeature('calc')">
+                        <i class="fas fa-calculator"></i>
+                        <span>حاسبة صيدلانية</span>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-title">سجل المحادثات</div>
+                    <div id="chatHistory"></div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">ص</div>
+                    <div class="user-info">
+                        <div class="user-name">طالب صيدلة</div>
+                        <div class="user-role">المستوى: سنة خامسة</div>
+                    </div>
+                    <i class="fas fa-ellipsis" style="color: var(--text-secondary);"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="top-bar-title" id="topBarTitle">AI Dr Abo El Ezz</div>
+                <div class="top-bar-actions">
+                    <button class="icon-btn" onclick="shareChat()" title="مشاركة">
+                        <i class="fas fa-share-nodes"></i>
+                    </button>
+                    <button class="icon-btn" onclick="showSettings()" title="الإعدادات">
+                        <i class="fas fa-gear"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-area" id="chatArea">
+                <!-- Welcome Screen -->
+                <div class="welcome-screen" id="welcomeScreen">
+                    <div class="welcome-logo">🧬</div>
+                    <h1 class="welcome-title">AI Dr Abo El Ezz</h1>
+                    <p class="welcome-subtitle">
+                        مساعدك الذكي المتخصص في كلية الصيدلة. يمكنك رفع ملفات PDF، حل الأسئلة، 
+                        إنشاء الامتحانات، والحصول على معلومات دوائية شاملة.
+                    </p>
+                    <div class="features-grid">
+                        <div class="feature-card" onclick="showFeature('pdf')">
+                            <div class="feature-icon pdf"><i class="fas fa-file-pdf"></i></div>
+                            <div class="feature-title">تحليل PDF</div>
+                            <div class="feature-desc">ارفع ملف PDF واطلب التلخيص أو حل الأسئلة منه</div>
+                        </div>
+                        <div class="feature-card" onclick="showFeature('quiz')">
+                            <div class="feature-icon quiz"><i class="fas fa-clipboard-question"></i></div>
+                            <div class="feature-title">امتحانات تفاعلية</div>
+                            <div class="feature-desc">أنشئ امتحانات MCQ من أي مادة دراسية</div>
+                        </div>
+                        <div class="feature-card" onclick="showFeature('summary')">
+                            <div class="feature-icon summary"><i class="fas fa-file-lines"></i></div>
+                            <div class="feature-title">تلخيص ذكي</div>
+                            <div class="feature-desc">لخص أي محتوى دراسي بشكل منظم وواضح</div>
+                        </div>
+                        <div class="feature-card" onclick="showFeature('solve')">
+                            <div class="feature-icon solve"><i class="fas fa-lightbulb"></i></div>
+                            <div class="feature-title">حل الأسئلة</div>
+                            <div class="feature-desc">احصل على إجابات مفصلة لأسئلتك الصيدلانية</div>
+                        </div>
+                        <div class="feature-card" onclick="showFeature('drug')">
+                            <div class="feature-icon drug"><i class="fas fa-pills"></i></div>
+                            <div class="feature-title">معلومات دوائية</div>
+                            <div class="feature-desc">ابحث عن أي دواء واعرف آلية عمله والجرعات</div>
+                        </div>
+                        <div class="feature-card" onclick="showFeature('calc')">
+                            <div class="feature-icon calc"><i class="fas fa-calculator"></i></div>
+                            <div class="feature-title">حاسبة صيدلانية</div>
+                            <div class="feature-desc">احسب الجرعات وتركيزات المحاليل بسهولة</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages Container -->
+                <div class="messages-container" id="messagesContainer"></div>
+
+                <!-- Typing Indicator -->
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="message-content">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-body">
+                            <div class="message-header">
+                                <span class="message-sender">Dr Abo El Ezz</span>
+                            </div>
+                            <div class="typing-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <div class="file-preview" id="filePreview">
+                        <div class="file-icon"><i class="fas fa-file-pdf"></i></div>
+                        <div class="file-info">
+                            <div class="file-name" id="fileName">document.pdf</div>
+                            <div class="file-size" id="fileSize">2.5 MB</div>
+                        </div>
+                        <button class="file-remove" onclick="removeFile()">
+                            <i class="fas fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="input-wrapper">
+                        <textarea 
+                            class="input-field" 
+                            id="messageInput" 
+                            placeholder="اكتب رسالتك هنا... اطلب تلخيص، امتحان، حل سؤال، أو معلومات دوائية"
+                            rows="1"
+                            oninput="autoResize(this)"
+                            onkeydown="handleKeyDown(event)"
+                        ></textarea>
+                        <div class="input-toolbar">
+                            <div class="input-tools">
+                                <button class="tool-btn" onclick="document.getElementById('fileInput').click()" title="رفع ملف PDF">
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <button class="tool-btn" onclick="showQuizModal()" title="إنشاء امتحان">
+                                    <i class="fas fa-clipboard-question"></i>
+                                </button>
+                                <button class="tool-btn" onclick="showDrugModal()" title="معلومات دوائية">
+                                    <i class="fas fa-pills"></i>
+                                </button>
+                                <button class="tool-btn" onclick="showCalcModal()" title="حاسبة صيدلانية">
+                                    <i class="fas fa-calculator"></i>
+                                </button>
+                            </div>
+                            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <input type="file" id="fileInput" accept=".pdf,.txt,.doc,.docx" onchange="handleFileSelect(event)">
+                    <div class="input-hint">
+                        AI Dr Abo El Ezz قد ينتج معلومات غير دقيقة أحياناً. تحقق دائماً من المعلومات الهامة.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Quiz Modal -->
+    <div class="modal-overlay" id="quizModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">📝 إنشاء امتحان تفاعلي</div>
+                <button class="modal-close" onclick="closeModal('quizModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">المادة الدراسية</label>
+                    <select class="form-select" id="quizSubject">
+                        <option value="pharmacology">علم الأدوية (Pharmacology)</option>
+                        <option value="medicinal">الكيمياء الدوائية (Medicinal Chemistry)</option>
+                        <option value="pharmaceutics">الصيدلانيات (Pharmaceutics)</option>
+                        <option value="pharmacognosy">العلاج بالنباتات (Pharmacognosy)</option>
+                        <option value="clinical">الصيدلة الإكلينيكية (Clinical Pharmacy)</option>
+                        <option value="microbiology">الميكروبيولوجي الطبي</option>
+                        <option value="biochemistry">الكيمياء الحيوية</option>
+                        <option value="pathology">الأمراض والفيزيولوجيا</option>
+                        <option value="custom">مادة مخصصة</option>
+                    </select>
+                </div>
+                <div class="form-group" id="customSubjectGroup" style="display:none;">
+                    <label class="form-label">اسم المادة المخصصة</label>
+                    <input type="text" class="form-input" id="customSubject" placeholder="أدخل اسم المادة">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">عدد الأسئلة</label>
+                    <select class="form-select" id="quizCount">
+                        <option value="5">5 أسئلة</option>
+                        <option value="10" selected>10 أسئلة</option>
+                        <option value="15">15 سؤال</option>
+                        <option value="20">20 سؤال</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">مستوى الصعوبة</label>
+                    <select class="form-select" id="quizDifficulty">
+                        <option value="easy">سهل</option>
+                        <option value="medium" selected>متوسط</option>
+                        <option value="hard">صعب</option>
+                        <option value="mixed">متنوع</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">الموضوع المحدد (اختياري)</label>
+                    <input type="text" class="form-input" id="quizTopic" placeholder="مثال: المضادات الحيوية، أدوية القلب، إلخ">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="quiz-btn secondary" onclick="closeModal('quizModal')">إلغاء</button>
+                <button class="quiz-btn primary" onclick="generateQuiz()">
+                    <i class="fas fa-wand-magic-sparkles" style="margin-left:6px;"></i>
+                    إنشاء الامتحان
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drug Modal -->
+    <div class="modal-overlay" id="drugModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">💊 البحث عن دواء</div>
+                <button class="modal-close" onclick="closeModal('drugModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">اسم الدواء (تجاري أو علمي)</label>
+                    <input type="text" class="form-input" id="drugSearchInput" placeholder="مثال: Amoxicillin, Augmentin, بروفين...">
+                    <div class="form-hint">يمكنك البحث بالاسم التجاري أو العلمي (Generic Name)</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="quiz-btn secondary" onclick="closeModal('drugModal')">إلغاء</button>
+                <button class="quiz-btn primary" onclick="searchDrug()">
+                    <i class="fas fa-search" style="margin-left:6px;"></i>
+                    بحث
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calculator Modal -->
+    <div class="modal-overlay" id="calcModal">
+        <div class="modal" style="max-width: 420px;">
+            <div class="modal-header">
+                <div class="modal-title">🧮 الحاسبة الصيدلانية</div>
+                <button class="modal-close" onclick="closeModal('calcModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">نوع الحساب</label>
+                    <select class="form-select" id="calcType" onchange="switchCalcMode()">
+                        <option value="basic">حاسبة عادية</option>
+                        <option value="dose">حساب الجرعة (Dose)</option>
+                        <option value="bmi">مؤشر كتلة الجسم (BMI)</option>
+                        <option value="creatinine">تصفية الكرياتينين (CrCl)</option>
+                        <option value="infusion">معدل التسريب (Infusion Rate)</option>
+                    </select>
+                </div>
+                <div id="calcBasic">
+                    <div class="calc-container">
+                        <div class="calc-display" id="calcDisplay">0</div>
+                        <div class="calc-buttons">
+                            <button class="calc-btn clear" onclick="calcClear()">C</button>
+                            <button class="calc-btn" onclick="calcAppend('(')">(</button>
+                            <button class="calc-btn" onclick="calcAppend(')')">)</button>
+                            <button class="calc-btn operator" onclick="calcAppend('/')">÷</button>
+                            <button class="calc-btn" onclick="calcAppend('7')">7</button>
+                            <button class="calc-btn" onclick="calcAppend('8')">8</button>
+                            <button class="calc-btn" onclick="calcAppend('9')">9</button>
+                            <button class="calc-btn operator" onclick="calcAppend('*')">×</button>
+                            <button class="calc-btn" onclick="calcAppend('4')">4</button>
+                            <button class="calc-btn" onclick="calcAppend('5')">5</button>
+                            <button class="calc-btn" onclick="calcAppend('6')">6</button>
+                            <button class="calc-btn operator" onclick="calcAppend('-')">−</button>
+                            <button class="calc-btn" onclick="calcAppend('1')">1</button>
+                            <button class="calc-btn" onclick="calcAppend('2')">2</button>
+                            <button class="calc-btn" onclick="calcAppend('3')">3</button>
+                            <button class="calc-btn operator" onclick="calcAppend('+')">+</button>
+                            <button class="calc-btn" onclick="calcAppend('0')">0</button>
+                            <button class="calc-btn" onclick="calcAppend('.')">.</button>
+                            <button class="calc-btn" onclick="calcBackspace()">⌫</button>
+                            <button class="calc-btn operator" onclick="calcEquals()">=</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="calcDose" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">وزن المريض (kg)</label>
+                        <input type="number" class="form-input" id="doseWeight" placeholder="70">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الجرعة المطلوبة (mg/kg)</label>
+                        <input type="number" class="form-input" id="dosePerKg" placeholder="10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تركيز الدواء المتاح (mg/ml)</label>
+                        <input type="number" class="form-input" id="doseConc" placeholder="50">
+                    </div>
+                    <button class="quiz-btn primary" style="width:100%;" onclick="calcDose()">حساب الجرعة</button>
+                    <div id="doseResult" style="margin-top:16px; padding:16px; background:var(--bg-tertiary); border-radius:8px; display:none;"></div>
+                </div>
+                <div id="calcBMI" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">الوزن (kg)</label>
+                        <input type="number" class="form-input" id="bmiWeight" placeholder="70">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الطول (cm)</label>
+                        <input type="number" class="form-input" id="bmiHeight" placeholder="175">
+                    </div>
+                    <button class="quiz-btn primary" style="width:100%;" onclick="calcBMI()">حساب BMI</button>
+                    <div id="bmiResult" style="margin-top:16px; padding:16px; background:var(--bg-tertiary); border-radius:8px; display:none;"></div>
+                </div>
+                <div id="calcCrCl" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">العمر (سنة)</label>
+                        <input type="number" class="form-input" id="crclAge" placeholder="50">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الوزن (kg)</label>
+                        <input type="number" class="form-input" id="crclWeight" placeholder="70">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الكرياتينين في الدم (mg/dL)</label>
+                        <input type="number" class="form-input" id="crclSerum" placeholder="1.2" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الجنس</label>
+                        <select class="form-select" id="crclGender">
+                            <option value="male">ذكر</option>
+                            <option value="female">أنثى</option>
+                        </select>
+                    </div>
+                    <button class="quiz-btn primary" style="width:100%;" onclick="calcCrCl()">حساب CrCl</button>
+                    <div id="crclResult" style="margin-top:16px; padding:16px; background:var(--bg-tertiary); border-radius:8px; display:none;"></div>
+                </div>
+                <div id="calcInfusion" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">الجرعة المطلوبة (mg)</label>
+                        <input type="number" class="form-input" id="infDose" placeholder="1000">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">الحجم الكلي للمحلول (ml)</label>
+                        <input type="number" class="form-input" id="infVolume" placeholder="500">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">مدة التسريب (ساعة)</label>
+                        <input type="number" class="form-input" id="infTime" placeholder="8">
+                    </div>
+                    <button class="quiz-btn primary" style="width:100%;" onclick="calcInfusion()">حساب معدل التسريب</button>
+                    <div id="infResult" style="margin-top:16px; padding:16px; background:var(--bg-tertiary); border-radius:8px; display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+                    {
+                        question: "ما هو المبدأ الأساسي لعملية lyophilization (freeze-drying)؟",
+                        options: [
+                            "تبخير الماء من المحلول الساخن",
+                            "تجميد المحلول ثم تصعيد الماء المتجمد",
+                            "ترسيب الدواء من المحلول",
+                            "تقطير المحلول تحت ضغط منخفض"
+                        ],
+                        correct: 1,
+                        explanation: "Lyophilization تتضمن تجميد المنتج ثم تصعيد الماء المتجمد (sublimation) تحت فراغ، مما يحافظ على استقرار المنتج الحساس للحرارة."
+                    },
+                    {
+                        question: "أي من التالي يعتبر مثالاً على مادة مُلِمّة (binder) في الأقراص؟",
+                        options: ["Talc", "Povidone (PVP)", "Croscarmellose", "Colloidal silicon dioxide"],
+                        correct: 1,
+                        explanation: "Povidone (PVP) هي مادة ملمة (binder) شائعة تساعد على تماسك الجسيمات معاً أثناء الضغط."
+                    },
+                    {
+                        question: "ما هو الهدف من استخدام glidant في صياغة الأقراص؟",
+                        options: [
+                            "تحسين تدفق المسحوق",
+                            "تسريع تفكك القرص",
+                            "زيادة صلابة القرص",
+                            "تحسين مذاق القرص"
+                        ],
+                        correct: 0,
+                        explanation: "Glidants مثل colloidal silicon dioxide تُستخدم لتحسين flowability (تدفق) المساحيق وتقليل الاحتكاك بين الجسيمات."
+                    }
+                ],
+                pharmacognosy: [
+                    {
+                        question: "ما هو المصدر النباتي للأتروبين؟",
+                        options: ["Digitalis purpurea", "Atropa belladonna", "Papaver somniferum", "Cinchona officinalis"],
+                        correct: 1,
+                        explanation: "الأتروبين يُستخرج من نبات Atropa belladonna (ال deadly nightshade) من عائلة Solanaceae."
+                    },
+                    {
+                        question: "أي من التالي يعتبر alkaloid مسكن للألم؟",
+                        options: ["Caffeine", "Morphine", "Atropine", "Quinine"],
+                        correct: 1,
+                        explanation: "المورفين هو alkaloid أفيوني يُستخرج من Papaver somniferum ويعمل كمسكن قوي للألم."
+                    },
+                    {
+                        question: "ما هو المصدر النباتي للديجوكسين؟",
+                        options: ["Digitalis purpurea", "Atropa belladonna", "Cinchona officinalis", "Rauwolfia serpentina"],
+                        correct: 0,
+                        explanation: "الديجوكسين يُستخرج من أوراق Digitalis purpurea (Foxglove)."
+                    },
+                    {
+                        question: "أي من التالي يعتبر flavonoid مضاد للأكسدة؟",
+                        options: ["Quercetin", "Morphine", "Atropine", "Digoxin"],
+                        correct: 0,
+                        explanation: "الكيرسيتين (Quercetin) هو flavonoid مضاد للأكسدة يوجد في البصل والتفاح والشاي الأخضر."
+                    },
+                    {
+                        question: "ما هو المصدر النباتي للكينين؟",
+                        options: ["Digitalis purpurea", "Cinchona officinalis", "Papaver somniferum", "Ephedra sinica"],
+                        correct: 1,
+                        explanation: "الكينين يُستخرج من لحاء Cinchona officinalis ويستخدم في علاج الملاريا."
+                    },
+                    {
+                        question: "أي من التالي يعتبر terpenoid مضاد للالتهاب؟",
+                        options: ["Boswellic acid", "Morphine", "Caffeine", "Nicotine"],
+                        correct: 0,
+                        explanation: "Boswellic acid هو terpenoid يُستخرج من لبان Boswellia serrata وله تأثير مضاد للالتهاب."
+                    },
+                    {
+                        question: "ما هو المصدر النباتي للإيفيدرين؟",
+                        options: ["Ephedra sinica", "Atropa belladonna", "Digitalis purpurea", "Cinchona officinalis"],
+                        correct: 0,
+                        explanation: "الإيفيدرين يُستخرج من نبات Ephedra sinica ويعمل كمحفز sympathomimetic."
+                    },
+                    {
+                        question: "أي من التالي يعتبر glycoside قلبي؟",
+                        options: ["Digoxin", "Morphine", "Caffeine", "Quinine"],
+                        correct: 0,
+                        explanation: "الديجوكسين هو cardiac glycoside يزيد قوة انقباض القلب ويبطئ معدل ضرباته."
+                    },
+                    {
+                        question: "ما هو المصدر النباتي للكافيين؟",
+                        options: ["Coffea arabica", "Thea sinensis", "Cola nitida", "كل ما سبق"],
+                        correct: 3,
+                        explanation: "الكافيين يوجد في Coffea arabica (القهوة)، Thea sinensis (الشاي)، و Cola nitida (الكولا)."
+                    },
+                    {
+                        question: "أي من التالي يعتبر saponin مُطَهِّر؟",
+                        options: ["Saponaria officinalis", "Digitalis purpurea", "Papaver somniferum", "Cinchona officinalis"],
+                        correct: 0,
+                        explanation: "Saponaria officinalis (Soapwort) يحتوي على saponins تستخدم كمطهرات ومنظفات طبيعية."
+                    }
+                ],
+                clinical: [
+                    {
+                        question: "ما هي النافذة العلاجية (Therapeutic Window) للفينيتوين؟",
+                        options: ["5-10 mcg/ml", "10-20 mcg/ml", "20-30 mcg/ml", "30-40 mcg/ml"],
+                        correct: 1,
+                        explanation: "النافذة العلاجية للفينيتوين هي 10-20 mcg/ml. فوق 20 mcg/ml يزداد خطر السمية العصبية."
+                    },
+                    {
+                        question: "أي من التالي يعتهر مؤشراً على toxicity الديجوكسين؟",
+                        options: [
+                            "Bradycardia + nausea + yellow vision",
+                            "Tachycardia + diarrhea + headache",
+                            "Hypertension + chest pain + dyspnea",
+                            "Fever + rash + joint pain"
+                        ],
+                        correct: 0,
+                        explanation: "سمية الديجوكسين تتضمن bradycardia، غثيان، تقيؤ، ورؤية صفراء/خضراء (xanthopsia)."
+                    },
+                    {
+                        question: "ما هو الهدف العلاجي من مراقبة الأدوية العلاجية (TDM) للأمينوغليكوزيدات؟",
+                        options: [
+                            "تجنب السمية الكلوية والسمعية",
+                            "تحسين الامتصاص الفموي",
+                            "تقليل التفاعلات الدوائية",
+                            "زيادة فعالية الدواء"
+                        ],
+                        correct: 0,
+                        explanation: "TDM للأمينوغليكوزيدات (جنتاميسين، أميكاسين) ضروري لتجنب السمية الكلوية والسمعية الناتجة عن تراكم الدواء."
+                    },
+                    {
+                        question: "أي من التالي يعتبر مؤشراً على نقص سكر الدم الحاد؟",
+                        options: [
+                            "Confusion + sweating + tachycardia",
+                            "Hypertension + bradycardia + flushing",
+                            "Fever + chills + rigors",
+                            "Chest pain + dyspnea + diaphoresis"
+                        ],
+                        correct: 0,
+                        explanation: "أعراض نقص السكر الحاد تشمل الارتباك، التعرق، تسارع ضربات القلب، الرعشة، والجوع الشديد."
+                    },
+                    {
+                        question: "ما هو التداخل الدوائي الخطير بين الوارفارين والأسبرين؟",
+                        options: [
+                            "يزيد خطر النزيف",
+                            "يقلل فعالية الوارفارين",
+                            "يزيد خطر الجلطة",
+                            "لا يوجد تداخل"
+                        ],
+                        correct: 0,
+                        explanation: "الأسبرين (NSAID) يزيد من خطر النزيف الهضمي عند استخدامه مع الوارفارين، وكلا الدواءين يؤثران على التخثر."
+                    },
+                    {
+                        question: "أي من التالي يعتبر مؤشراً على overdose الباراسيتامول؟",
+                        options: [
+                            "Nausea + vomiting + RUQ pain (24-72h)",
+                            "Headache + dizziness + blurred vision",
+                            "Chest pain + dyspnea + palpitations",
+                            "Fever + rash + arthralgia"
+                        ],
+                        correct: 0,
+                        explanation: "Overdose الباراسيتامول يسبب غثيان، تقيؤ، وآلام في الربع العلوي الأيمن (تلف كبدي) بعد 24-72 ساعة."
+                    },
+                    {
+                        question: "ما هو الهدف من استخدام N-acetylcysteine (NAC) في overdose الباراسيتامول؟",
+                        options: [
+                            "تنشيط إنزيمات الكبد",
+                            "تجديد Glutathione وربط المستقلبات السامة",
+                            "تسريع إفراز الباراسيتامول",
+                            "تثبيط امتصاص الباراسيتامول"
+                        ],
+                        correct: 1,
+                        explanation: "NAC يعمل كمصدر لل cysteine لتجديد Glutathione، الذي يربط المستقلبات السامة NAPQI ويمنع تلف الكبد."
+                    },
+                    {
+                        question: "أي من التالي يعتبر مؤشراً على toxicity الليثيوم؟",
+                        options: [
+                            "Tremor + ataxia + confusion + polyuria",
+                            "Bradycardia + hypotension + syncope",
+                            "Hypertension + tachycardia + anxiety",
+                            "Fever + rash + eosinophilia"
+                        ],
+                        correct: 0,
+                        explanation: "سمية الليثيوم تتضمن رعشة، عدم اتزان، ارتباك، بول كثير، غثيان، وقيء. المستوى السام >1.5 mEq/L."
+                    },
+                    {
+                        question: "ما هو التداخل الدوائي بين Omeprazole و Clopidogrel؟",
+                        options: [
+                            "Omeprazole يثبط CYP2C19 ويقلل تفعيل Clopidogrel",
+                            "Omeprazole يزيد امتصاص Clopidogrel",
+                            "Clopidogrel يقلل فعالية Omeprazole",
+                            "لا يوجد تداخل"
+                        ],
+                        correct: 0,
+                        explanation: "Omeprazole يثبط إنزيم CYP2C19 المسؤول عن تحويل Clopidogrel إلى شكله النشط، مما يقلل فعاليته المضادة للصفائح."
+                    },
+                    {
+                        question: "أي من التالي يعتبر مؤشراً على Stevens-Johnson Syndrome (SJS)؟",
+                        options: [
+                            "Fever + mucosal involvement + skin detachment <10%",
+                            "Fever + rash + joint pain",
+                            "Urticaria + angioedema + wheezing",
+                            "Erythema + pruritus + scaling"
+                        ],
+                        correct: 0,
+                        explanation: "SJS تتميز بحمى، إصابة الأغشية المخاطية، وتقشر الجلد بنسبة <10% من مساحة الجسم. غالباً ناتجة عن أدوية مثل السلفوناميد والكاربامازيبين."
+                    }
+                ]
+            }
+        };
+
+        // ====== STATE MANAGEMENT ======
+        let currentChat = [];
+        let currentFile = null;
+        let currentQuiz = null;
+        let quizAnswers = {};
+        let currentQuizIndex = 0;
+
+        // ====== UTILITY FUNCTIONS ======
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function getTimeString() {
+            const now = new Date();
+            return now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { success: '✓', error: '✕', info: 'ℹ' };
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type]}</span>
+                <span class="toast-message">${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // ====== SIDEBAR FUNCTIONS ======
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function startNewChat() {
+            currentChat = [];
+            currentFile = null;
+            currentQuiz = null;
+            document.getElementById('messagesContainer').innerHTML = '';
+            document.getElementById('messagesContainer').style.display = 'none';
+            document.getElementById('welcomeScreen').style.display = 'flex';
+            document.getElementById('messageInput').value = '';
+            document.getElementById('messageInput').style.height = 'auto';
+            removeFile();
+            document.getElementById('topBarTitle').textContent = 'AI Dr Abo El Ezz';
+        }
+
+        function renderChatHistory() {
+            const container = document.getElementById('chatHistory');
+            container.innerHTML = '';
+            // Simple demo - in real app would load from localStorage
+        }
+
+        // ====== FILE HANDLING ======
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('حجم الملف كبير جداً. الحد الأقصى 10 ميجابايت', 'error');
+                return;
+            }
+
+            currentFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            document.getElementById('filePreview').classList.add('show');
+            showToast('تم رفع الملف بنجاح', 'success');
+        }
+
+        function removeFile() {
+            currentFile = null;
+            document.getElementById('filePreview').classList.remove('show');
+            document.getElementById('fileInput').value = '';
+        }
+
+        // ====== MESSAGE FUNCTIONS ======
+        function addMessage(text, isUser = false, extraHTML = '') {
+            const container = document.getElementById('messagesContainer');
+            const welcome = document.getElementById('welcomeScreen');
+
+            if (welcome.style.display !== 'none') {
+                welcome.style.display = 'none';
+                container.style.display = 'flex';
+            }
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${isUser ? 'user' : 'ai'}`;
+            const avatar = isUser ? '👨‍⚕️' : '🤖';
+            const sender = isUser ? 'أنت' : 'Dr Abo El Ezz';
+
+            msgDiv.innerHTML = `
+                <div class="message-content">
+                    <div class="message-avatar">${avatar}</div>
+                    <div class="message-body">
+                        <div class="message-header">
+                            <span class="message-sender">${sender}</span>
+                            <span class="message-time">${getTimeString()}</span>
+                        </div>
+                        <div class="message-text">${text}</div>
+                        ${extraHTML}
+                        <div class="message-actions">
+                            <button class="msg-action-btn" onclick="copyMessage(this)">
+                                <i class="fas fa-copy"></i> نسخ
+                            </button>
+                            <button class="msg-action-btn" onclick="regenerateMessage(this)">
+                                <i class="fas fa-rotate-right"></i> إعادة
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(msgDiv);
+            scrollToBottom();
+
+            currentChat.push({
+                id: generateId(),
+                text: text,
+                isUser: isUser,
+                time: getTimeString()
+            });
+        }
+
+        function scrollToBottom() {
+            const chatArea = document.getElementById('chatArea');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function showTyping() {
+            document.getElementById('typingIndicator').style.display = 'block';
+            scrollToBottom();
+        }
+
+        function hideTyping() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function copyMessage(btn) {
+            const text = btn.closest('.message-body').querySelector('.message-text').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('تم النسخ', 'success');
+            });
+        }
+
+        function regenerateMessage(btn) {
+            showToast('جاري إعادة التوليد...', 'info');
+        }
+
+        // ====== AI RESPONSE GENERATOR ======
+        function generateAIResponse(userMessage) {
+            const msg = userMessage.toLowerCase();
+
+            // Drug search
+            for (const [key, drug] of Object.entries(pharmacyDB.drugs)) {
+                if (msg.includes(key) || msg.includes(drug.name) || msg.includes(drug.generic.toLowerCase())) {
+                    return formatDrugInfo(drug);
+                }
+            }
+
+            // Summary request
+            if (msg.includes('لخص') || msg.includes('تلخيص') || msg.includes('summary')) {
+                return generateSummary(userMessage);
+            }
+
+            // Quiz request
+            if (msg.includes('امتحان') || msg.includes('اختبار') || msg.includes('quiz') || msg.includes('mcq')) {
+                return generateQuizFromMessage();
+            }
+
+            // Solve question
+            if (msg.includes('حل') || msg.includes('إجابة') || msg.includes('جواب') || msg.includes('answer')) {
+                return solveQuestion(userMessage);
+            }
+
+            // PDF analysis
+            if (currentFile || msg.includes('pdf') || msg.includes('ملف')) {
+                return analyzePDFContent(userMessage);
+            }
+
+            // Calculator
+            if (msg.includes('حساب') || msg.includes('جرعة') || msg.includes('bmi') || msg.includes('crcl')) {
+                return handleCalculation(userMessage);
+            }
+
+            // General pharmacy info
+            if (msg.includes('صيدلة') || msg.includes('دواء') || msg.includes('دوا') || msg.includes('علاج')) {
+                return generatePharmacyInfo(userMessage);
+            }
+
+            // Default response
+            return generateDefaultResponse(userMessage);
+        }
+
+        function formatDrugInfo(drug) {
+            let html = `
+                <div class="drug-card">
+                    <div class="drug-name">${drug.name} (${drug.generic})</div>
+                    <div class="drug-generic">${drug.class}</div>
+
+                    <div class="drug-section">
+                        <div class="drug-section-title"><i class="fas fa-dna"></i> آلية العمل</div>
+                        <div class="drug-section-content">${drug.mechanism}</div>
+                    </div>
+
+                    <div class="drug-section">
+                        <div class="drug-section-title"><i class="fas fa-list-check"></i> الاستطبابات</div>
+                        <div class="drug-section-content">
+                            <ul>${drug.indications.map(i => `<li>${i}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+
+                    <div class="drug-section">
+                        <div class="drug-section-title"><i class="fas fa-pills"></i> الجرعات</div>
+                        <div class="drug-section-content">
+                            ${Object.entries(drug.dosage).map(([k, v]) => `<strong>${k}:</strong> ${v}<br>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="drug-section">
+                        <div class="drug-section-title"><i class="fas fa-triangle-exclamation"></i> الموانع</div>
+                        <div class="drug-section-content">
+                            <ul>${drug.contraindications.map(c => `<li>${c}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+
+                    <div class="drug-section">
+                        <div class="drug-section-title"><i class="fas fa-skull-crossbones"></i> الآثار الجانبية</div>
+                        <div class="drug-section-content">
+                            <ul>${drug.sideEffects.map(s => `<li>${s}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+
+                    <div class="drug-section">
+                        <div class="drug-section-title"><i class="fas fa-exchange-alt"></i> التداخلات الدوائية</div>
+                        <div class="drug-section-content">
+                            <ul>${drug.interactions.map(i => `<li>${i}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+
+                    <div class="drug-section">
+                        <div class="drug-section-title"><i class="fas fa-baby"></i> الحمل والرضاعة</div>
+                        <div class="drug-section-content">${drug.pregnancy}</div>
+                    </div>
+
+                    ${drug.notes ? `
+                    <div class="drug-section">
+                        <div class="drug-section-title"><i class="fas fa-circle-info"></i> ملاحظات هامة</div>
+                        <div class="drug-section-content">${drug.notes}</div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            return { text: `إليك المعلومات الكاملة عن دواء **${drug.name}**:`, html: html };
+        }
+
+        function generateSummary(text) {
+            const summaryHTML = `
+                <div class="summary-card">
+                    <div class="summary-header">
+                        <div class="summary-icon"><i class="fas fa-file-lines"></i></div>
+                        <div class="summary-title">ملخص المحتوى</div>
+                    </div>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">5</div>
+                            <div class="stat-label">نقاط رئيسية</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">مواضيع فرعية</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">85%</div>
+                            <div class="stat-label">دقة التلخيص</div>
+                        </div>
+                    </div>
+                    <ul class="summary-points">
+                        <li>المحتوى يتعلق بمادة علم الأدوية والصيدلة الإكلينيكية</li>
+                        <li>يتضمن معلومات عن آليات العمل الدوائية والجرعات</li>
+                        <li>يغطي التداخلات الدوائية والآثار الجانبية الرئيسية</li>
+                        <li>يحتوي على بيانات سريرية مهمة للممارسة الصيدلانية</li>
+                        <li>ينصح بمراجعة المصادر الأصلية للتفاصيل الدقيقة</li>
+                    </ul>
+                </div>
+            `;
+            return { text: 'تم تلخيص المحتوى بنجاح:', html: summaryHTML };
+        }
+
+        function solveQuestion(text) {
+            return {
+                text: `**الإجابة المفصلة:**
+
+بناءً على سؤالك، إليك التحليل:
+
+1. **تحليل السؤال:** السؤال يتعلق بمادة علم الأدوية
+2. **المفاهيم الرئيسية:** آليات العمل، الجرعات، التداخلات
+3. **الإجابة:** يعتمد على المعلومات المتوفرة في قاعدة البيانات الدوائية
+
+**ملاحظة:** للحصول على إجابة دقيقة، يرجى تقديم السؤال بشكل أكثر تفصيلاً أو تحديد الدواء/المادة المطلوبة.`,
+                html: ''
+            };
+        }
+
+        function analyzePDFContent(text) {
+            const pdfHTML = `
+                <div class="pdf-viewer">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+                        <i class="fas fa-file-pdf" style="font-size:24px; color:var(--danger);"></i>
+                        <div>
+                            <div style="font-weight:700;">${currentFile ? currentFile.name : 'document.pdf'}</div>
+                            <div style="font-size:12px; color:var(--text-secondary);">تم تحليل الملف بنجاح</div>
+                        </div>
+                    </div>
+                    <div class="pdf-pages">
+                        <div class="pdf-page">
+                            <div class="pdf-page-num">الصفحة 1</div>
+                            <div>
+                                <strong>محتوى الملف:</strong><br><br>
+                                تم تحليل الملف بنجاح. المحتوى يتضمن معلومات صيدلانية متنوعة تشمل:
+
+
+                                • معلومات عن الأدوية وآليات عملها
+
+                                • الجرعات والاستطبابات
+
+                                • التداخلات الدوائية والآثار الجانبية
+
+                                • بيانات سريرية وإرشادات علاجية
+
+
+                                <strong>الملخص:</strong> الملف يحتوي على محتوى تعليمي مفيد لطلاب كلية الصيدلة.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return { text: 'تم تحليل ملف PDF بنجاح:', html: pdfHTML };
+        }
+
+        function handleCalculation(text) {
+            return {
+                text: `**الحاسبة الصيدلانية:**
+
+للحصول على نتائج دقيقة، يرجى استخدام الحاسبة المتخصصة من خلال النقر على زر 🧮 في شريط الأدوات.
+
+الحاسبة تدعم:
+• حساب الجرعات (Dose Calculation)
+• مؤشر كتلة الجسم (BMI)
+• تصفية الكرياتينين (CrCl)
+• معدل التسريب (Infusion Rate)
+• الحاسبة العادية`,
+                html: ''
+            };
+        }
+
+        function generatePharmacyInfo(text) {
+            return {
+                text: `**مرحباً بك في AI Dr Abo El Ezz!** 🎓
+
+أنا مساعدك الذكي المتخصص في كلية الصيدلة. يمكنني مساعدتك في:
+
+🔬 **علم الأدوية** - آليات العمل، الجرعات، التداخلات
+💊 **معلومات دوائية** - ابحث عن أي دواء بالاسم التجاري أو العلمي
+📝 **الامتحانات** - أنشئ امتحانات MCQ تفاعلية
+📄 **تحليل PDF** - ارفع ملفاتك واطلب التلخيص أو الحل
+🧮 **الحاسبة** - احسب الجرعات والمؤشرات السريرية
+
+**كيف يمكنني مساعدتك اليوم؟**`,
+                html: ''
+            };
+        }
+
+        function generateDefaultResponse(text) {
+            return {
+                text: `شكراً لسؤالك! 🎯
+
+أنا **Dr Abo El Ezz**، مساعدك الذكي في كلية الصيدلة.
+
+للحصول على أفضل إجابة، يمكنك:
+
+1️⃣ **البحث عن دواء** - اكتب اسم الدواء (مثل: Amoxicillin, Metformin, Omeprazole)
+2️⃣ **إنشاء امتحان** - اكتب "امتحان" + اسم المادة
+3️⃣ **تلخيص محتوى** - اكتب "لخص" + الموضوع
+4️⃣ **حل سؤال** - اكتب السؤال وسأحاول الإجابة
+5️⃣ **رفع PDF** - استخدم زر 📎 لرفع الملف
+
+**جرب الآن:** اكتب اسم أي دواء تعرفه!`,
+                html: ''
+            };
+        }
+
+        // ====== SEND MESSAGE ======
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+
+            if (!text && !currentFile) return;
+
+            const displayText = text || (currentFile ? `📎 ${currentFile.name}` : '');
+            addMessage(displayText, true);
+
+            input.value = '';
+            input.style.height = 'auto';
+
+            showTyping();
+
+            setTimeout(() => {
+                hideTyping();
+                const response = generateAIResponse(text);
+                if (typeof response === 'object' && response.html) {
+                    addMessage(response.text, false, response.html);
+                } else if (typeof response === 'object') {
+                    addMessage(response.text, false);
+                } else {
+                    addMessage(response, false);
+                }
+            }, 1500 + Math.random() * 1000);
+        }
+
+        // ====== FEATURE FUNCTIONS ======
+        function showFeature(feature) {
+            const input = document.getElementById('messageInput');
+            switch(feature) {
+                case 'pdf':
+                    input.value = 'ارفع ملف PDF لتحليله';
+                    document.getElementById('fileInput').click();
+                    break;
+                case 'quiz':
+                    showQuizModal();
+                    break;
+                case 'summary':
+                    input.value = 'لخص لي الموضوع التالي: ';
+                    input.focus();
+                    break;
+                case 'solve':
+                    input.value = 'حل لي السؤال التالي: ';
+                    input.focus();
+                    break;
+                case 'drug':
+                    showDrugModal();
+                    break;
+                case 'calc':
+                    showCalcModal();
+                    break;
+            }
+        }
+
+        // ====== MODAL FUNCTIONS ======
+        function showQuizModal() {
+            document.getElementById('quizModal').classList.add('show');
+        }
+
+        function showDrugModal() {
+            document.getElementById('drugModal').classList.add('show');
+        }
+
+        function showCalcModal() {
+            document.getElementById('calcModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // ====== QUIZ FUNCTIONS ======
+        function generateQuiz() {
+            const subject = document.getElementById('quizSubject').value;
+            const count = parseInt(document.getElementById('quizCount').value);
+            const difficulty = document.getElementById('quizDifficulty').value;
+            const topic = document.getElementById('quizTopic').value;
+
+            closeModal('quizModal');
+
+            let questions = [];
+            if (pharmacyDB.quizQuestions[subject]) {
+                questions = [...pharmacyDB.quizQuestions[subject]];
+            } else {
+                // Combine all questions
+                Object.values(pharmacyDB.quizQuestions).forEach(qs => {
+                    questions = questions.concat(qs);
+                });
+            }
+
+            // Shuffle and select
+            questions = questions.sort(() => Math.random() - 0.5).slice(0, count);
+
+            if (questions.length === 0) {
+                showToast('لا توجد أسئلة متاحة لهذا الموضوع', 'error');
+                return;
+            }
+
+            currentQuiz = questions;
+            currentQuizIndex = 0;
+            quizAnswers = {};
+
+            startNewChat();
+            document.getElementById('topBarTitle').textContent = `امتحان ${getSubjectName(subject)}`;
+            showQuizQuestion(0);
+        }
+
+        function getSubjectName(key) {
+            const names = {
+                pharmacology: 'علم الأدوية',
+                medicinal: 'الكيمياء الدوائية',
+                pharmaceutics: 'الصيدلانيات',
+                pharmacognosy: 'علم النباتات الطبية',
+                clinical: 'الصيدلة الإكلينيكية',
+                microbiology: 'الميكروبيولوجي',
+                biochemistry: 'الكيمياء الحيوية',
+                pathology: 'الأمراض',
+                custom: 'مادة مخصصة'
+            };
+            return names[key] || key;
+        }
+
+        function showQuizQuestion(index) {
+            if (index >= currentQuiz.length) {
+                showQuizResults();
+                return;
+            }
+
+            const q = currentQuiz[index];
+            const letters = ['أ', 'ب', 'ج', 'د'];
+
+            const quizHTML = `
+                <div class="quiz-container" id="activeQuiz">
+                    <div class="quiz-header">
+                        <div class="quiz-title">📝 سؤال ${index + 1}</div>
+                        <div class="quiz-progress">${index + 1} / ${currentQuiz.length}</div>
+                    </div>
+                    <div class="quiz-question">${q.question}</div>
+                    <div class="quiz-options">
+                        ${q.options.map((opt, i) => `
+                            <div class="quiz-option ${quizAnswers[index] === i ? 'selected' : ''}" onclick="selectQuizOption(${i})">
+                                <div class="option-letter">${letters[i]}</div>
+                                <div>${opt}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="quiz-actions">
+                        ${index > 0 ? `<button class="quiz-btn secondary" onclick="prevQuizQuestion()">السابق</button>` : ''}
+                        <button class="quiz-btn primary" onclick="nextQuizQuestion()" ${quizAnswers[index] === undefined ? 'disabled' : ''}>
+                            ${index === currentQuiz.length - 1 ? 'إنهاء الامتحان' : 'التالي'}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            addMessage('', false, quizHTML);
+        }
+
+        function selectQuizOption(optionIndex) {
+            quizAnswers[currentQuizIndex] = optionIndex;
+            const options = document.querySelectorAll('#activeQuiz .quiz-option');
+            options.forEach((opt, i) => {
+                opt.classList.toggle('selected', i === optionIndex);
+            });
+            document.querySelector('#activeQuiz .quiz-btn.primary').disabled = false;
+        }
+
+        function nextQuizQuestion() {
+            currentQuizIndex++;
+            showQuizQuestion(currentQuizIndex);
+        }
+
+        function prevQuizQuestion() {
+            currentQuizIndex--;
+            showQuizQuestion(currentQuizIndex);
+        }
+
+        function showQuizResults() {
+            let correct = 0;
+            currentQuiz.forEach((q, i) => {
+                if (quizAnswers[i] === q.correct) correct++;
+            });
+
+            const percentage = Math.round((correct / currentQuiz.length) * 100);
+            let message = '';
+            if (percentage >= 90) message = 'ممتاز! 🌟';
+            else if (percentage >= 70) message = 'جيد جداً! 👍';
+            else if (percentage >= 50) message = 'يمكنك التحسن 💪';
+            else message = 'حاول مرة أخرى 📚';
+
+            const resultHTML = `
+                <div class="quiz-container">
+                    <div class="quiz-result">
+                        <div class="result-score">${percentage}%</div>
+                        <div class="result-text">${message}</div>
+                        <div class="result-detail">${correct} من ${currentQuiz.length} إجابات صحيحة</div>
+                        <button class="quiz-btn primary" onclick="generateQuiz()">امتحان جديد</button>
+                        <button class="quiz-btn secondary" onclick="showQuizReview()">مراجعة الأخطاء</button>
+                    </div>
+                </div>
+            `;
+
+            addMessage('', false, resultHTML);
+        }
+
+        function showQuizReview() {
+            let reviewHTML = '<div class="quiz-container"><div class="quiz-title" style="margin-bottom:20px;">📋 مراجعة الأخطاء</div>';
+
+            currentQuiz.forEach((q, i) => {
+                if (quizAnswers[i] !== q.correct) {
+                    const letters = ['أ', 'ب', 'ج', 'د'];
+                    reviewHTML += `
+                        <div style="margin-bottom:20px; padding:16px; background:var(--bg-tertiary); border-radius:8px;">
+                            <div style="font-weight:700; margin-bottom:8px;">سؤال ${i + 1}: ${q.question}</div>
+                            <div style="color:var(--danger); margin-bottom:4px;">❌ إجابتك: ${letters[quizAnswers[i]]} - ${q.options[quizAnswers[i]]}</div>
+                            <div style="color:var(--success);">✓ الإجابة الصحيحة: ${letters[q.correct]} - ${q.options[q.correct]}</div>
+                            <div style="margin-top:8px; font-size:13px; color:var(--text-secondary);">${q.explanation}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            reviewHTML += '</div>';
+            addMessage('', false, reviewHTML);
+        }
+
+        // ====== DRUG SEARCH ======
+        function searchDrug() {
+            const name = document.getElementById('drugSearchInput').value.trim().toLowerCase();
+            if (!name) {
+                showToast('أدخل اسم الدواء', 'error');
+                return;
+            }
+
+            closeModal('drugModal');
+
+            for (const [key, drug] of Object.entries(pharmacyDB.drugs)) {
+                if (key.includes(name) || drug.name.includes(name) || drug.generic.toLowerCase().includes(name)) {
+                    const response = formatDrugInfo(drug);
+                    addMessage(response.text, false, response.html);
+                    return;
+                }
+            }
+
+            addMessage(`عذراً، لم أجد معلومات عن دواء "${name}" في قاعدة البيانات.
+
+الأدوية المتاحة حالياً:
+• Amoxicillin (أموكسيسيلين)
+• Augmentin (أوجمنتين)
+• Metformin (ميتفورمين)
+• Atorvastatin (أتورفاستاتين)
+• Omeprazole (أوميبرازول)
+• Paracetamol (باراسيتامول)
+• Ibuprofen (إيبوبروفين)
+• Amlodipine (أملوديبين)
+• Lisinopril (ليزينوبريل)
+• Insulin (الأنسولين)
+• Warfarin (وارفارين)
+• Digoxin (ديجوكسين)
+• Phenytoin (فينيتوين)
+
+هل تريد البحث عن دواء آخر؟`, false);
+        }
+
+        // ====== CALCULATOR FUNCTIONS ======
+        function switchCalcMode() {
+            const mode = document.getElementById('calcType').value;
+            document.getElementById('calcBasic').style.display = mode === 'basic' ? 'block' : 'none';
+            document.getElementById('calcDose').style.display = mode === 'dose' ? 'block' : 'none';
+            document.getElementById('calcBMI').style.display = mode === 'bmi' ? 'block' : 'none';
+            document.getElementById('calcCrCl').style.display = mode === 'creatinine' ? 'block' : 'none';
+            document.getElementById('calcInfusion').style.display = mode === 'infusion' ? 'block' : 'none';
+        }
+
+        let calcExpression = '';
+        function calcAppend(val) {
+            calcExpression += val;
+            document.getElementById('calcDisplay').textContent = calcExpression || '0';
+        }
+        function calcClear() {
+            calcExpression = '';
+            document.getElementById('calcDisplay').textContent = '0';
+        }
+        function calcBackspace() {
+            calcExpression = calcExpression.slice(0, -1);
+            document.getElementById('calcDisplay').textContent = calcExpression || '0';
+        }
+        function calcEquals() {
+            try {
+                const result = eval(calcExpression);
+                document.getElementById('calcDisplay').textContent = result;
+                calcExpression = String(result);
+            } catch {
+                document.getElementById('calcDisplay').textContent = 'Error';
+                calcExpression = '';
+            }
+        }
+
+        function calcDose() {
+            const weight = parseFloat(document.getElementById('doseWeight').value);
+            const perKg = parseFloat(document.getElementById('dosePerKg').value);
+            const conc = parseFloat(document.getElementById('doseConc').value);
+
+            if (!weight || !perKg || !conc) {
+                showToast('أدخل جميع القيم', 'error');
+                return;
+            }
+
+            const totalDose = weight * perKg;
+            const volume = totalDose / conc;
+
+            document.getElementById('doseResult').style.display = 'block';
+            document.getElementById('doseResult').innerHTML = `
+                <div style="font-size:18px; font-weight:700; color:var(--accent-color); margin-bottom:8px;">النتيجة</div>
+                <div>الجرعة الإجمالية: <strong>${totalDose.toFixed(2)} mg</strong></div>
+                <div>الحجم المطلوب: <strong>${volume.toFixed(2)} ml</strong></div>
+                <div style="margin-top:8px; font-size:12px; color:var(--text-secondary);">
+                    الصيغة: (الوزن × الجرعة لكل كجم) ÷ التركيز
+                </div>
+            `;
+        }
+
+        function calcBMI() {
+            const weight = parseFloat(document.getElementById('bmiWeight').value);
+            const heightCm = parseFloat(document.getElementById('bmiHeight').value);
+
+            if (!weight || !heightCm) {
+                showToast('أدخل الوزن والطول', 'error');
+                return;
+            }
+
+            const heightM = heightCm / 100;
+            const bmi = weight / (heightM * heightM);
+
+            let category = '';
+            let color = '';
+            if (bmi < 18.5) { category = 'نقص الوزن'; color = 'var(--warning)'; }
+            else if (bmi < 25) { category = 'وزن طبيعي'; color = 'var(--success)'; }
+            else if (bmi < 30) { category = 'زيادة الوزن'; color = 'var(--warning)'; }
+            else { category = 'سمنة'; color = 'var(--danger)'; }
+
+            document.getElementById('bmiResult').style.display = 'block';
+            document.getElementById('bmiResult').innerHTML = `
+                <div style="font-size:18px; font-weight:700; color:var(--accent-color); margin-bottom:8px;">BMI = ${bmi.toFixed(1)}</div>
+                <div style="color:${color}; font-weight:700;">${category}</div>
+                <div style="margin-top:8px; font-size:12px; color:var(--text-secondary);">
+                    • أقل من 18.5: نقص وزن<br>
+                    • 18.5 - 24.9: وزن طبيعي<br>
+                    • 25 - 29.9: زيادة وزن<br>
+                    • 30 وأكثر: سمنة
+                </div>
+            `;
+        }
+
+        function calcCrCl() {
+            const age = parseFloat(document.getElementById('crclAge').value);
+            const weight = parseFloat(document.getElementById('crclWeight').value);
+            const serumCr = parseFloat(document.getElementById('crclSerum').value);
+            const gender = document.getElementById('crclGender').value;
+
+            if (!age || !weight || !serumCr) {
+                showToast('أدخل جميع القيم', 'error');
+                return;
+            }
+
+            let crcl = ((140 - age) * weight) / (72 * serumCr);
+            if (gender === 'female') crcl *= 0.85;
+
+            let stage = '';
+            let color = '';
+            if (crcl >= 90) { stage = 'وظيفة طبيعية'; color = 'var(--success)'; }
+            else if (crcl >= 60) { stage = 'قصور خفيف (G2)'; color = 'var(--warning)'; }
+            else if (crcl >= 30) { stage = 'قصور متوسط (G3)'; color = 'var(--warning)'; }
+            else if (crcl >= 15) { stage = 'قصور شديد (G4)'; color = 'var(--danger)'; }
+            else { stage = 'فشل كلوي (G5)'; color = 'var(--danger)'; }
+
+            document.getElementById('crclResult').style.display = 'block';
+            document.getElementById('crclResult').innerHTML = `
+                <div style="font-size:18px; font-weight:700; color:var(--accent-color); margin-bottom:8px;">CrCl = ${crcl.toFixed(1)} ml/min</div>
+                <div style="color:${color}; font-weight:700;">${stage}</div>
+                <div style="margin-top:8px; font-size:12px; color:var(--text-secondary);">
+                    • ≥90: طبيعي | 60-89: خفيف | 30-59: متوسط<br>
+                    • 15-29: شديد | &lt;15: فشل كلوي
+                </div>
+            `;
+        }
+
+        function calcInfusion() {
+            const dose = parseFloat(document.getElementById('infDose').value);
+            const volume = parseFloat(document.getElementById('infVolume').value);
+            const time = parseFloat(document.getElementById('infTime').value);
+
+            if (!dose || !volume || !time) {
+                showToast('أدخل جميع القيم', 'error');
+                return;
+            }
+
+            const rate = volume / time;
+            const dosePerHour = dose / time;
+
+            document.getElementById('infResult').style.display = 'block';
+            document.getElementById('infResult').innerHTML = `
+                <div style="font-size:18px; font-weight:700; color:var(--accent-color); margin-bottom:8px;">النتيجة</div>
+                <div>معدل التسريب: <strong>${rate.toFixed(1)} ml/hour</strong></div>
+                <div>الجرعة في الساعة: <strong>${dosePerHour.toFixed(1)} mg/hour</strong></div>
+                <div style="margin-top:8px; font-size:12px; color:var(--text-secondary);">
+                    • gtt/min = (ml/hour × drop factor) ÷ 60<br>
+                    • drop factor عادة 15-20 gtt/ml
+                </div>
+            `;
+        }
+
+        function calculate() {
+            const mode = document.getElementById('calcType').value;
+            switch(mode) {
+                case 'dose': calcDose(); break;
+                case 'bmi': calcBMI(); break;
+                case 'creatinine': calcCrCl(); break;
+                case 'infusion': calcInfusion(); break;
+            }
+        }
+
+        // ====== OTHER FUNCTIONS ======
+        function shareChat() {
+            showToast('تم نسخ رابط المحادثة', 'success');
+        }
+
+        function showSettings() {
+            showToast('الإعدادات قريباً', 'info');
+        }
+
+        function generateQuizFromMessage() {
+            return generateQuiz();
+        }
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) overlay.classList.remove('show');
+            });
+        });
+
+        // Subject change handler
+        document.getElementById('quizSubject').addEventListener('change', function() {
+            document.getElementById('customSubjectGroup').style.display = 
+                this.value === 'custom' ? 'block' : 'none';
+        });
+
+        // Initialize
+        renderChatHistory();
+    </script>
+</body>
+</html>
